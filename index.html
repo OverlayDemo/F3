@@ -3,51 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JEWELS-AI Automotive</title>
+  <title>JEWELS-AI Jewellery AR</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     body { margin: 0; font-family: 'Poppins', sans-serif; background: #000; }
-    
-    /* 2D Overlay Logo */
     #logo { position: absolute; top: 16px; left: 16px; width: 100px; z-index: 100; }
 
     /* UI STYLES */
     .ar-ui { display: none; z-index: 100; }
-
     .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); }
-
     .play-button {
       padding: 12px 24px; font-size: 15px; font-weight: bold; border: none;
-      border-radius: 30px; background-color: #5E0F8B; color: #fff;
-      cursor: pointer; min-width: 160px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      border-radius: 30px; background-color: #D4AF37; /* Gold Color */
+      color: #000; cursor: pointer; min-width: 160px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
       transition: background 0.3s;
     }
-    .play-button:hover { background-color: #7a17b8; }
+    .play-button:hover { background-color: #fdd835; }
 
     .top-right-panel {
       position: absolute; top: 20px; right: 20px;
       display: flex; flex-direction: column; gap: 25px; align-items: center;
     }
-
     .btn-wrapper { position: relative; width: 50px; height: 50px; }
-    
     .icon-btn {
       width: 50px; height: 50px; background-color: rgba(0, 0, 0, 0.6);
-      border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 24px; backdrop-filter: blur(4px);
+      border: 2px solid #D4AF37; /* Gold Border */
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: #D4AF37; font-size: 24px; backdrop-filter: blur(4px);
     }
-    #whatsappBtn:hover { background-color: rgba(37, 211, 102, 0.8); border-color: #25D366; }
-
     .btn-label {
       position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
-      color: white; font-size: 10px; font-weight: bold; pointer-events: none;
+      color: #D4AF37; font-size: 10px; font-weight: bold; pointer-events: none;
       white-space: nowrap; text-shadow: 0 1px 2px black;
     }
-
     .a-enter-vr-button { display: none !important; }
     #toast {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -82,7 +73,7 @@
 
     <a-assets>
       <video id="plan1Video" src="plan1.mp4" playsinline preload="auto" loop crossorigin="anonymous"></video>
-      <img id="logo3d" src="logo.png" /> 
+      <img id="logo3d" src="logo.png" />
       
       </a-assets>
 
@@ -107,38 +98,41 @@
       </a-image>
 
       <a-entity position="0 -0.4 0.3" animation="property: position; to: 0 -0.45 0.3; dir: alternate; dur: 2500; loop: true">
-        <a-text value="JEWELS AI TEAM" color="#FFF" align="center" width="1.8" position="0 0.1 0" font="exo2bold" shader="msdf"></a-text>
-        <a-text value="AI Specialist" color="#EEE" align="center" width="1.2" position="0 0 0"></a-text>
+        <a-text value="JEWELS AI TEAM" color="#D4AF37" align="center" width="1.8" position="0 0.1 0" font="exo2bold" shader="msdf"></a-text>
+        <a-text value="Luxury & Tech" color="#EEE" align="center" width="1.2" position="0 0 0"></a-text>
       </a-entity>
 
-      <a-entity 
-        position="0 0 0" 
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear">
+      <a-entity rotation="0 0 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear">
         
-        <a-entity position="0.7 0.05 0" rotation="0 110 0">
-          
-          <a-entity id="car-body">
-             <a-box color="#FF0055" width="0.2" height="0.08" depth="0.4" position="0 0.08 0"></a-box>
-             <a-box color="#222" width="0.18" height="0.06" depth="0.2" position="0 0.15 -0.05"></a-box> <a-box color="#FFF" width="0.19" height="0.04" depth="0.05" position="0 0.08 0.2" shader="flat"></a-box> <a-box color="#FF0000" width="0.19" height="0.04" depth="0.05" position="0 0.08 -0.2" shader="flat"></a-box> <a-cylinder color="#333" radius="0.05" height="0.02" rotation="0 0 90" position="0.11 0.05 0.12"></a-cylinder>
-             <a-cylinder color="#333" radius="0.05" height="0.02" rotation="0 0 90" position="-0.11 0.05 0.12"></a-cylinder>
-             <a-cylinder color="#333" radius="0.05" height="0.02" rotation="0 0 90" position="0.11 0.05 -0.12"></a-cylinder>
-             <a-cylinder color="#333" radius="0.05" height="0.02" rotation="0 0 90" position="-0.11 0.05 -0.12"></a-cylinder>
-          </a-entity>
+        <a-entity position="0.7 0 0">
+            
+            <a-torus color="#FFD700" radius="0.12" radius-tubular="0.015" metalness="0.8" roughness="0.2"
+                     animation="property: rotation; to: 360 360 0; loop: true; dur: 4000">
+            </a-torus>
+            
+            <a-octahedron color="#E0FFFF" radius="0.04" position="0 0.13 0" material="opacity: 0.9; metalness: 1; roughness: 0"></a-octahedron>
+            
+            <a-circle color="#FFF" radius="0.06" position="0 0.13 0.04" opacity="0.6"
+              animation="property: scale; from: 0.5 0.5 0.5; to: 1.2 1.2 1.2; dir: alternate; dur: 500; loop: true">
+            </a-circle>
+            
+            </a-entity>
+      </a-entity>
 
-          <a-plane color="#DDD" width="0.1" height="0.1" position="0 0 -0.3" opacity="0.4"
-            animation="property: position; to: 0 0.2 -0.8; dur: 800; loop: true; easing: easeOutQuad"
-            animation__fade="property: opacity; to: 0; dur: 800; loop: true; easing: easeOutQuad">
-          </a-plane>
-
+      <a-entity rotation="15 0 0" animation="property: rotation; to: 15 -360 0; loop: true; dur: 6000; easing: linear">
+        <a-entity position="0.6 0.2 0">
+           <a-octahedron color="#00FFFF" radius="0.03" metalness="1" opacity="0.8"
+             animation="property: rotation; to: 0 360 0; loop: true; dur: 2000"></a-octahedron>
         </a-entity>
       </a-entity>
+      
       </a-entity>
   </a-scene>
 
   <script>
     const contactInfo = {
       name: "Jewels AI Team", phone: "+1234567890", email: "info@jewels-ai.com",
-      website: "https://www.jewels-ai.com", title: "AI Specialist", org: "JEWELS-AI",
+      website: "https://www.jewels-ai.com", title: "Luxury AI", org: "JEWELS-AI",
       locationUrl: "https://goo.gl/maps/YOUR_LOCATION_ID", whatsapp: "1234567890"
     };
 
