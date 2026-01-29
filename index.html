@@ -1,3 +1,12 @@
+It looks like you have a very complete version of the code! Based on your request, I have reviewed and refined it to ensure **all three requirements** work perfectly together:
+
+1. **Scratch Card:** A "Bonus" button that opens a scratch-off layer.
+2. **Random Discount:** The logic explicitly generates a number between **20% and 50%** for "Making Charges" every time the button is clicked.
+3. **Share Button:** A "Share" button is placed right next to the "Close" button. When clicked, it takes a **screenshot** of the revealed discount and opens the sharing menu on your phone.
+
+Here is the **Final Complete Code**:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,23 +14,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JEWELS-AI</title>
 
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    #loader {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+    }
+    .spinner {
+      width: 40px; height: 40px; border: 4px solid #fff;
+      border-top: 4px solid #5E0F8B; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 15px;
+    }
+    .loading-text { color: white; font-family: sans-serif; font-size: 14px; letter-spacing: 1px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
   <style>
-    body { margin: 0; font-family: 'Poppins', sans-serif; background: #000; }
+    body { margin: 0; font-family: 'Poppins', sans-serif; background: #000; overflow: hidden; }
     
-    /* 2D Overlay Logo (Top Left Screen) */
-    #logo {
-      position: absolute; top: 16px; left: 16px; width: 100px; z-index: 100;
-    }
+    #logo { position: absolute; top: 16px; left: 16px; width: 100px; z-index: 100; }
 
-    /* --- UI BUTTON STYLES (SAME AS BEFORE) --- */
+    /* UI HIDDEN INITIALLY */
     .ar-ui { display: none; z-index: 100; }
 
-    .bottom-panel {
-      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-    }
+    .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); }
 
     .play-button {
       padding: 12px 24px; font-size: 15px; font-weight: bold; border: none;
@@ -31,13 +51,16 @@
     }
     .play-button:hover { background-color: #7a17b8; }
 
+    /* GRID LAYOUT FOR TOP RIGHT BUTTONS */
     .top-right-panel {
       position: absolute; top: 20px; right: 20px;
-      display: flex; flex-direction: column; gap: 25px; align-items: center;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px 15px; justify-items: center;
     }
 
     .btn-wrapper { position: relative; width: 50px; height: 50px; }
     
+    /* ROUND ICON BUTTONS */
     .icon-btn {
       width: 50px; height: 50px; background-color: rgba(0, 0, 0, 0.6);
       border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
@@ -45,12 +68,64 @@
       color: white; font-size: 24px; backdrop-filter: blur(4px);
     }
     #whatsappBtn:hover { background-color: rgba(37, 211, 102, 0.8); border-color: #25D366; }
+    #scratchBtn { border-color: #FFD700; color: #FFD700; } 
+    #scratchBtn:hover { background-color: rgba(255, 215, 0, 0.3); }
+
+    /* RIBBON SAVE BUTTON STYLE */
+    #saveContactBtn {
+      width: 50px; height: 75px; background-color: #000; border: none; border-radius: 0;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
+      display: flex; align-items: flex-start; justify-content: center; padding-top: 15px;
+      filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+    }
+    .save-wrapper .btn-label { bottom: -30px; }
 
     .btn-label {
       position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
-      color: white; font-size: 10px; font-weight: bold; pointer-events: none;
+      color: white; font-size: 9px; font-weight: bold; pointer-events: none;
       white-space: nowrap; text-shadow: 0 1px 2px black;
     }
+
+    /* SCRATCH CARD OVERLAY STYLES */
+    #scratchOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 999;
+      display: none; align-items: center; justify-content: center; flex-direction: column;
+    }
+    
+    /* The container we will screenshot */
+    #captureTarget.scratch-container {
+      position: relative; width: 300px; height: 180px; 
+      background: white; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    
+    .secret-code {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+      color: #d32f2f; font-weight: bold; text-align: center; padding: 10px; box-sizing: border-box;
+    }
+    .discount-val { font-size: 38px; line-height: 1; margin-bottom: 5px; color: #C00; }
+    .discount-label { font-size: 14px; color: #444; text-transform: uppercase; letter-spacing: 1px; }
+    
+    #scratchCanvas {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      cursor: crosshair; touch-action: none;
+    }
+    
+    /* Buttons container for Share/Close */
+    .scratch-actions { display: flex; gap: 15px; margin-top: 25px; }
+    
+    .overlay-btn {
+      padding: 10px 25px; border: 2px solid white;
+      background: rgba(255,255,255,0.1); color: white; font-weight: bold;
+      border-radius: 25px; cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: background 0.2s; display: flex; align-items: center; gap: 8px;
+    }
+    .overlay-btn:hover { background: rgba(255,255,255,0.3); }
+    .share-btn { background: rgba(255, 215, 0, 0.2); border-color: #FFD700; color: #FFD700; }
+    .share-btn:hover { background: rgba(255, 215, 0, 0.4); }
 
     .a-enter-vr-button { display: none !important; }
     #toast {
@@ -62,6 +137,11 @@
 </head>
 <body>
 
+  <div id="loader">
+    <div class="spinner"></div>
+    <div class="loading-text">LOADING AR...</div>
+  </div>
+
   <img src="logo.png" id="logo" alt="JEWELS-AI logo">
 
   <div class="ar-ui bottom-panel" id="bottomPanel">
@@ -72,10 +152,27 @@
     <div class="btn-wrapper"><button class="icon-btn" id="locationBtn">📍</button><div class="btn-label">Map</div></div>
     <div class="btn-wrapper"><button class="icon-btn" id="websiteBtn">🌐</button><div class="btn-label">Web</div></div>
     <div class="btn-wrapper"><button class="icon-btn" id="whatsappBtn">💬</button><div class="btn-label">Chat</div></div>
-    <div class="btn-wrapper"><button class="icon-btn" id="saveContactBtn">💾</button><div class="btn-label">Save</div></div>
+    
+    <div class="btn-wrapper"><button class="icon-btn" id="scratchBtn">🎁</button><div class="btn-label">Bonus</div></div>
+    
+    <div class="btn-wrapper save-wrapper">
+      <button class="icon-btn" id="saveContactBtn" aria-label="Save Contact">💾</button>
+      <div class="btn-label">Save</div>
+    </div>
   </div>
 
   <div id="toast">Action Disabled</div>
+
+  <div id="scratchOverlay">
+    <div class="scratch-container" id="captureTarget">
+      <div class="secret-code" id="secretContainer"></div>
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+    <div class="scratch-actions">
+      <button class="overlay-btn share-btn" id="shareScratchBtn">Share 📤</button>
+      <button class="overlay-btn close-btn" id="closeScratchBtn">Close ✖️</button>
+    </div>
+  </div>
 
   <a-scene 
     mindar-image="imageTargetSrc: ./targets.mind" 
@@ -85,52 +182,19 @@
     device-orientation-permission-ui="enabled: false">
 
     <a-assets>
-      <video id="plan1Video" src="plan1.mp4" playsinline preload="auto" loop crossorigin="anonymous"></video>
-      <img id="logo3d" src="logo.png" /> 
+      <video id="plan1Video" src="plan1.mp4" playsinline preload="metadata" loop crossorigin="anonymous"></video>
+      <img id="logo3d" src="logo.png" crossorigin="anonymous"/> 
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity id="target1" mindar-image-target="targetIndex: 0">
-      
-      <a-plane 
-        id="videoDisplay" 
-        position="0 0 0" 
-        width="1" 
-        height="0.59" 
-        material="src: #plan1Video; shader: flat; side: double">
-      </a-plane>
-
-      <a-image 
-        src="#logo3d" 
-        position="0 0.4 0.3" 
-        width="0.3" 
-        height="0.3"
-        animation="property: position; to: 0 0.45 0.3; dir: alternate; dur: 2000; loop: true">
-      </a-image>
-
+      <a-plane id="videoDisplay" position="0 0 0" width="1" height="0.59" material="src: #plan1Video; shader: flat; side: double"></a-plane>
+      <a-image src="#logo3d" position="0 0.4 0.3" width="0.3" height="0.3" animation="property: position; to: 0 0.45 0.3; dir: alternate; dur: 2000; loop: true"></a-image>
       <a-entity position="0 -0.4 0.3" animation="property: position; to: 0 -0.45 0.3; dir: alternate; dur: 2500; loop: true">
-        
-        <a-text 
-          value="JEWELS AI TEAM" 
-          color="#FFF" 
-          align="center" 
-          width="1.8" 
-          position="0 0.1 0"
-          font="exo2bold"
-          shader="msdf">
-        </a-text>
-        
-        <a-text 
-          value="AI Specialist" 
-          color="#EEE" 
-          align="center" 
-          width="1.2" 
-          position="0 0 0">
-        </a-text>
-
+        <a-text value="JEWELS AI TEAM" color="#FFF" align="center" width="1.8" position="0 0.1 0" font="exo2bold" shader="msdf"></a-text>
+        <a-text value="AI Specialist" color="#EEE" align="center" width="1.2" position="0 0 0"></a-text>
       </a-entity>
-
     </a-entity>
   </a-scene>
 
@@ -141,64 +205,172 @@
       locationUrl: "https://goo.gl/maps/YOUR_LOCATION_ID", whatsapp: "1234567890"
     };
 
-    const sceneEl = document.querySelector('a-scene');
-    const videoDisplay = document.querySelector('#videoDisplay');
-    const videoEl = document.querySelector('#plan1Video');
-    const uiElements = document.querySelectorAll('.ar-ui');
-    const toggleButton = document.querySelector('#toggleButton');
-    const saveContactBtn = document.querySelector('#saveContactBtn');
-    const locationBtn = document.querySelector('#locationBtn');
-    const websiteBtn = document.querySelector('#websiteBtn');
-    const whatsappBtn = document.querySelector('#whatsappBtn');
-    const target = document.querySelector('#target1');
-    const toast = document.querySelector('#toast');
-    let isPlaying = false;
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // Selectors
+      const sceneEl = document.querySelector('a-scene');
+      const loader = document.getElementById('loader');
+      
+      // Loader Logic
+      sceneEl.addEventListener('arReady', () => { loader.style.display = 'none'; });
+      setTimeout(() => { loader.style.display = 'none'; }, 5000);
 
-    function showToast(msg, t = 2000) {
-      toast.textContent = msg; toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, t);
-    }
-    videoEl.setAttribute('playsinline', '');
+      const videoDisplay = document.querySelector('#videoDisplay');
+      const videoEl = document.querySelector('#plan1Video');
+      const uiElements = document.querySelectorAll('.ar-ui');
+      const toggleButton = document.querySelector('#toggleButton');
+      const target = document.querySelector('#target1');
+      const toast = document.querySelector('#toast');
+      
+      // Menu Buttons
+      const btnMap = document.querySelector('#locationBtn');
+      const btnWeb = document.querySelector('#websiteBtn');
+      const btnChat = document.querySelector('#whatsappBtn');
+      const btnSave = document.querySelector('#saveContactBtn');
+      const btnScratch = document.querySelector('#scratchBtn');
+      
+      // Scratch Card Elements
+      const scratchOverlay = document.getElementById('scratchOverlay');
+      const closeScratchBtn = document.getElementById('closeScratchBtn');
+      const shareScratchBtn = document.getElementById('shareScratchBtn');
+      const captureTarget = document.getElementById('captureTarget');
+      const canvas = document.getElementById('scratchCanvas');
+      const ctx = canvas.getContext('2d');
+      const secretContainer = document.getElementById('secretContainer');
+      
+      let isPlaying = false;
+      let isDrawing = false;
+      let currentDiscount = 0;
 
-    sceneEl.addEventListener('renderstart', () => {
-      const comp = sceneEl.querySelector('[mindar-image]');
-      if (comp && comp.components['mindar-image']) comp.components['mindar-image'].start();
+      function showToast(msg, t = 3000) {
+        toast.textContent = msg; toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, t);
+      }
+      videoEl.setAttribute('playsinline', '');
+
+      // Initialize MindAR
+      sceneEl.addEventListener('renderstart', () => {
+        const comp = sceneEl.querySelector('[mindar-image]');
+        if (comp && comp.components['mindar-image']) comp.components['mindar-image'].start();
+      });
+
+      function setUiVisibility(visible) { uiElements.forEach(el => el.style.display = visible ? 'block' : 'none'); }
+      target.addEventListener('targetFound', () => { setUiVisibility(true); });
+      target.addEventListener('targetLost', () => {
+        setUiVisibility(false); if (!videoEl.paused) videoEl.pause();
+        isPlaying = false; toggleButton.textContent = "▶ Play Video";
+      });
+
+      toggleButton.addEventListener('click', async () => {
+        if (!isPlaying) {
+          videoDisplay.setAttribute('material', 'src', '#plan1Video');
+          try { await videoEl.play(); isPlaying = true; toggleButton.textContent = "⏸ Pause"; } 
+          catch (err) { showToast('Tap screen to allow video'); }
+        } else { videoEl.pause(); isPlaying = false; toggleButton.textContent = "▶ Play Video"; }
+      });
+
+      // --- BUTTON ACTIONS ---
+      btnSave.addEventListener('click', () => {
+        const vcard = ["BEGIN:VCARD","VERSION:3.0",`FN:${contactInfo.name}`,`ORG:${contactInfo.org}`,
+          `TITLE:${contactInfo.title}`,`TEL;TYPE=WORK,VOICE:${contactInfo.phone}`,`EMAIL:${contactInfo.email}`,
+          `URL:${contactInfo.website}`,"END:VCARD"].join("\n");
+        const blob = new Blob([vcard], { type: "text/vcard" });
+        const url = URL.createObjectURL(blob);
+        const newLink = document.createElement('a');
+        newLink.download = `${contactInfo.name.replace(" ", "_")}.vcf`;
+        newLink.href = url; newLink.click(); URL.revokeObjectURL(url);
+        showToast("Saving Contact...", 2000);
+      });
+      
+      btnMap.addEventListener('click', () => { window.open(contactInfo.locationUrl, '_blank'); });
+      btnWeb.addEventListener('click', () => { window.open(contactInfo.website, '_blank'); });
+      btnChat.addEventListener('click', () => {
+        const cleanNum = contactInfo.whatsapp.replace(/[^0-9]/g, '');
+        window.open(`https://wa.me/${cleanNum}`, '_blank');
+      });
+
+      // --- SCRATCH CARD LOGIC ---
+      function initScratchCard() {
+        canvas.width = 300; canvas.height = 180;
+        ctx.globalCompositeOperation = 'source-over'; 
+        ctx.fillStyle = '#CCCCCC'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#666666'; ctx.font = 'bold 20px Poppins, sans-serif';
+        ctx.textAlign = 'center'; ctx.fillText('Scratch Here!', canvas.width/2, canvas.height/2);
+        ctx.globalCompositeOperation = 'destination-out';
+      }
+
+      function scratch(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); 
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const x = clientX - rect.left; const y = clientY - rect.top;
+        const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height;
+        ctx.beginPath(); ctx.arc(x * scaleX, y * scaleY, 25, 0, Math.PI * 2); ctx.fill();
+      }
+
+      canvas.addEventListener('mousedown', () => isDrawing = true);
+      canvas.addEventListener('touchstart', () => isDrawing = true);
+      window.addEventListener('mouseup', () => isDrawing = false);
+      window.addEventListener('touchend', () => isDrawing = false);
+      canvas.addEventListener('mousemove', scratch);
+      canvas.addEventListener('touchmove', scratch);
+
+      // OPEN BONUS: Generate Random Discount (20-50%)
+      btnScratch.addEventListener('click', () => {
+        const min = 20; const max = 50;
+        currentDiscount = Math.floor(Math.random() * (max - min + 1)) + min;
+        
+        secretContainer.innerHTML = `
+          <div class="discount-label">CONGRATULATIONS!</div>
+          <div class="discount-val">${currentDiscount}% OFF</div>
+          <div class="discount-label">ON MAKING CHARGES</div>
+        `;
+        
+        scratchOverlay.style.display = 'flex'; 
+        initScratchCard();
+      });
+      
+      closeScratchBtn.addEventListener('click', () => { scratchOverlay.style.display = 'none'; });
+
+      // SHARE BUTTON: Screenshot & Share
+      shareScratchBtn.addEventListener('click', async () => {
+        if (!navigator.share || !navigator.canShare) {
+          showToast("Sharing not supported on this device."); return;
+        }
+        showToast("Preparing image...", 1000);
+        
+        try {
+          // Capture the 'captureTarget' div (the card with the revealed code)
+          const canvas = await html2canvas(captureTarget, { scale: 2, useCORS: true });
+          
+          canvas.toBlob(async (blob) => {
+            if (!blob) { showToast("Failed to generate image."); return; }
+            const file = new File([blob], 'jewels-discount.png', { type: 'image/png' });
+            
+            const shareData = {
+              title: 'My JEWELS-AI Discount!',
+              text: `I just won ${currentDiscount}% OFF on making charges with JEWELS-AI AR Card!`,
+              files: [file]
+            };
+            
+            if (navigator.canShare(shareData)) {
+              await navigator.share(shareData);
+            } else { 
+              showToast("Your device cannot share images."); 
+            }
+          }, 'image/png');
+        } catch (err) { 
+          console.error(err); 
+          showToast("Error sharing image."); 
+        }
+      });
+      
+      document.addEventListener("contextmenu", (e) => { e.preventDefault(); });
     });
-
-    function setUiVisibility(visible) { uiElements.forEach(el => el.style.display = visible ? 'block' : 'none'); }
-    target.addEventListener('targetFound', () => { setUiVisibility(true); });
-    target.addEventListener('targetLost', () => {
-      setUiVisibility(false); if (!videoEl.paused) videoEl.pause();
-      isPlaying = false; toggleButton.textContent = "▶ Play Video";
-    });
-
-    toggleButton.addEventListener('click', async () => {
-      if (!isPlaying) {
-        videoDisplay.setAttribute('material', 'src', '#plan1Video');
-        try { await videoEl.play(); isPlaying = true; toggleButton.textContent = "⏸ Pause"; } 
-        catch (err) { showToast('Tap screen to allow video'); }
-      } else { videoEl.pause(); isPlaying = false; toggleButton.textContent = "▶ Play Video"; }
-    });
-
-    saveContactBtn.addEventListener('click', () => {
-      const vcard = ["BEGIN:VCARD","VERSION:3.0",`FN:${contactInfo.name}`,`ORG:${contactInfo.org}`,
-        `TITLE:${contactInfo.title}`,`TEL;TYPE=WORK,VOICE:${contactInfo.phone}`,`EMAIL:${contactInfo.email}`,
-        `URL:${contactInfo.website}`,"END:VCARD"].join("\n");
-      const blob = new Blob([vcard], { type: "text/vcard" });
-      const url = URL.createObjectURL(blob);
-      const newLink = document.createElement('a');
-      newLink.download = `${contactInfo.name.replace(" ", "_")}.vcf`;
-      newLink.href = url; newLink.click(); URL.revokeObjectURL(url);
-      showToast("Saving Contact...", 2000);
-    });
-
-    locationBtn.addEventListener('click', () => { window.open(contactInfo.locationUrl, '_blank'); showToast("Opening Maps..."); });
-    websiteBtn.addEventListener('click', () => { window.open(contactInfo.website, '_blank'); showToast("Opening Website..."); });
-    whatsappBtn.addEventListener('click', () => {
-      const cleanNum = contactInfo.whatsapp.replace(/[^0-9]/g, '');
-      window.open(`https://wa.me/${cleanNum}`, '_blank'); showToast("Opening WhatsApp...");
-    });
-    document.addEventListener("contextmenu", (e) => { e.preventDefault(); });
   </script>
 </body>
 </html>
+
+```
